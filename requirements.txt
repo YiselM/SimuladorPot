@@ -2,3 +2,7 @@ django
 gunicorn
 django-heroku
 requests
+time
+datetime
+json
+mysql.connector
