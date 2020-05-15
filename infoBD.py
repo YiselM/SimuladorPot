@@ -17,29 +17,33 @@ def SendData(mycursor,mydb):
      now = datetime.now()
      fecha = now.strftime('%Y-%m-%d')
      hora = time.strftime("%H:%M")
-     rv = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IATLNTIC4&format=json&units=m&apiKey=f040e0b1ecb0410980e0b1ecb04109b0')
+     rv = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IATLNTIC4&format=json&units=m&apiKey=b0c8bd6bba23446a88bd6bba23f46af9')
      resultadov = rv.json()
      viento = (resultadov['observations'][0]['metric']['windSpeed'])*(10/36) #obtengo el viento   
-     rr = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IPUERTOC4&format=json&units=m&apiKey=f040e0b1ecb0410980e0b1ecb04109b0')
+     rr = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IPUERTOC4&format=json&units=m&apiKey=b0c8bd6bba23446a88bd6bba23f46af9')
      resultador = rr.json()
      radiacion = resultador['observations'][0]['solarRadiation'] #obtengo la radiacion 
      
      #Para la carga
      Pesenciales = 15
      Pnoesenciales = 68
-     if (hora > "%0:%00" and hora <= "%5:%00"):
+     if (hora >= "%0:%00" and hora <= "%5:%00"):
         Pcarga = 15
         #print(Pcarga) 
      if ((hora >= "%5:%00") and (hora <= "23:%20")):
         Pcarga = 83
         #print(Pcarga)
-     if (hora > "23:%20" and hora <= "%0:%00"):
+     if (hora >= "23:%20" and hora <= "%0:%00"):
         Pcarga = 15
         #print(Pcarga) 
 
      #Para el panel
      eficienciap = 0.13
      area = 1.31
+     #Esta es la potencia max
+     #carga esencial + perdidas
+     #potencia que necesita
+     #si es mayor, panel en lo maximo y las demas fuentes que entreguen
      Ppanel = radiacion*eficienciap*area
      Ppanel = round(Ppanel, 2)
      #print(Ppanel)
@@ -77,13 +81,14 @@ def SendData(mycursor,mydb):
         Pbat = 0
         Estado = 4
         #si no hay panel y si no hay generador 
+        #panel alimenta a las esenciales
         #La red alimenta las cargas no esenciales
         Pred1 = (Pesenciales - Ppanel*np - Pem*ng)/nred
         Pred1 = round(Pred1, 2)
         Pred = Pred1 + Pnoesenciales
         #para devolverme al estado 1
         #se realiza de nuevo
-        
+        #F real menor que la estimada
 
 
      #print(Pbat)
