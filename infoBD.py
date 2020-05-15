@@ -25,6 +25,8 @@ def SendData(mycursor,mydb):
      radiacion = resultador['observations'][0]['solarRadiation'] #obtengo la radiacion 
      
      #Para la carga
+     Pesenciales = 15
+     Pnoesenciales = 68
      if (hora > "%0:%00" and hora <= "%5:%00"):
         Pcarga = 15
         #print(Pcarga) 
@@ -34,12 +36,14 @@ def SendData(mycursor,mydb):
      if (hora > "23:%20" and hora <= "%0:%00"):
         Pcarga = 15
         #print(Pcarga) 
+
      #Para el panel
-     np = 0.13
+     eficienciap = 0.13
      area = 1.31
-     Ppanel = radiacion*np*area
+     Ppanel = radiacion*eficienciap*area
      Ppanel = round(Ppanel, 2)
      #print(Ppanel)
+
      #Para el generador
      if (viento < 4 or viento > 14):
         Pem = 0 
@@ -48,13 +52,17 @@ def SendData(mycursor,mydb):
      Pem = Pem/10
      Pem = round(Pem, 2)
      #print(Pem)
+
      #Para la red
      ng = 0.554
      nred = 0.448
      nbat = 0.8
+     np = 0.652
+     #Se repite
      Pred = (Pcarga - Ppanel*np - Pem*ng)/nred
      Pred = round(Pred, 2)
      #print(Pred)
+
      #Para la bateria y el estado
      if (Pred < Pcarga):
         Estado = 1
@@ -66,9 +74,17 @@ def SendData(mycursor,mydb):
         Estado = 1
         Pbat = 0
      if (Pred > Pcarga):
-        Pbat = 15/nbat
-        Pbat = round(Pbat, 2)
+        Pbat = 0
         Estado = 4
+        #si no hay panel y si no hay generador 
+        #La red alimenta las cargas no esenciales
+        Pred1 = (Pesenciales - Ppanel*np - Pem*ng)/nred
+        Pred1 = round(Pred1, 2)
+        Pred = Pred1 + Pnoesenciales
+        #para devolverme al estado 1
+        #se realiza de nuevo
+        
+
 
      #print(Pbat)
      #print(Estado)
@@ -79,8 +95,6 @@ def SendData(mycursor,mydb):
      mydb.commit()
      print("Subido")
 #    time.sleep(1) 
-
-
 
 inicio = time.time()
 while True: 
