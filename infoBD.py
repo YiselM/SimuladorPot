@@ -17,10 +17,10 @@ def SendData(mycursor,mydb):
      now = datetime.now()
      fecha = now.strftime('%Y-%m-%d')
      hora = time.strftime("%H:%M")
-     rv = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IATLNTIC4&format=json&units=m&apiKey=b0c8bd6bba23446a88bd6bba23f46af9')
+     rv = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IATLNTIC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultadov = rv.json()
      viento = (resultadov['observations'][0]['metric']['windSpeed'])*(10/36) #obtengo el viento   
-     rr = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IPUERTOC4&format=json&units=m&apiKey=b0c8bd6bba23446a88bd6bba23f46af9')
+     rr = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IPUERTOC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultador = rr.json()
      radiacion = resultador['observations'][0]['solarRadiation'] #obtengo la radiacion 
      
