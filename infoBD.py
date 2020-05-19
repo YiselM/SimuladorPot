@@ -20,34 +20,29 @@ def SendData(mycursor,mydb):
      rv = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IATLNTIC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultadov = rv.json()
      viento = (resultadov['observations'][0]['metric']['windSpeed'])*(10/36) #obtengo el viento   
+     #viento = 0
      rr = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IPUERTOC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultador = rr.json()
      radiacion = resultador['observations'][0]['solarRadiation'] #obtengo la radiacion 
+     #radiacion = 0
      
      #Para la carga
      Pesenciales = 15
      Pnoesenciales = 68
-     if (hora >= "%0:%00" and hora <= "%5:%00"):
+
+     if ((hora >= "00:00") and (hora <= "05:00")):
         Pcarga = 15
-        #print(Pcarga) 
-     if ((hora >= "%5:%00") and (hora <= "23:%20")):
+     if ((hora >= "05:00") and (hora <= "23:20")):
         Pcarga = 83
-        #print(Pcarga)
-     if (hora >= "23:%20" and hora <= "%0:%00"):
+     if ((hora >= "23:20") and (hora <= "00:00")):
         Pcarga = 15
-        #print(Pcarga) 
 
      #Para el panel
      eficienciap = 0.13
      area = 1.31
-     #Esta es la potencia max
-     #carga esencial + perdidas
-     #potencia que necesita
-     #si es mayor, panel en lo maximo y las demas fuentes que entreguen
      Ppanel = radiacion*eficienciap*area
      Ppanel = round(Ppanel, 2)
-     #print(Ppanel)
-
+     
      #Para el generador
      if (viento < 4 or viento > 14):
         Pem = 0 
@@ -55,44 +50,40 @@ def SendData(mycursor,mydb):
         Pem = (0.001723483*((viento)**6) - 0.04935507*((viento)**5) + 0.01124858*((viento)**4) + 12.34628*((viento)**3) - 144.3604*((viento)**2) + 657.3997*viento - 1038.827)*(5 / 60)
      Pem = Pem/10
      Pem = round(Pem, 2)
-     #print(Pem)
 
      #Para la red
      ng = 0.554
      nred = 0.448
      nbat = 0.8
      np = 0.652
-     #Se repite
      Pred = (Pcarga - Ppanel*np - Pem*ng)/nred
      Pred = round(Pred, 2)
-     #print(Pred)
 
-     #Para la bateria y el estado
+     #------------------------------//----------------------------//----------------------------
+     #El panel en lo maximo y las demas que aporten
+     #Si el panel tiene mas que la carga, entonces Pload/eficiencia
+     if (Ppanel >= Pcarga):
+        Ppanel = Pcarga/np
+     if (Ppanel < Pcarga):
+        Pfalta = Pcarga - Ppanel
+        if (Pem != 0 and Pem >= Pfalta):
+           Pem = Pfalta
+        if (Pem == 0):
+            Pbat = Pfalta
+
+     #Los estados
      if (Pred < Pcarga):
         Estado = 1
-        Pbat = 0
      if (Pred <= 0):
         Estado = 2
-        Pbat = 0
      if (Pred > 0 and Pred < Pcarga):
         Estado = 1
-        Pbat = 0
      if (Pred > Pcarga):
-        Pbat = 0
         Estado = 4
-        #si no hay panel y si no hay generador 
-        #panel alimenta a las esenciales
-        #La red alimenta las cargas no esenciales
         Pred1 = (Pesenciales - Ppanel*np - Pem*ng)/nred
         Pred1 = round(Pred1, 2)
         Pred = Pred1 + Pnoesenciales
-        #para devolverme al estado 1
-        #se realiza de nuevo
-        #F real menor que la estimada
 
-
-     #print(Pbat)
-     #print(Estado)
      sql = "INSERT INTO datos (P1, P2, P3, P4, P5, fecha, hora, estado) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
      val = (Pred, Ppanel, Pbat, Pcarga, Pem, fecha, hora, Estado)
     #print(val)
