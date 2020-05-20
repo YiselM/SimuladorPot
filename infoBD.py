@@ -58,12 +58,13 @@ def SendData(mycursor,mydb):
      np = 0.652
      Pred = (Pcarga - Ppanel*np - Pem*ng)/nred
      Pred = round(Pred, 2)
+     Pbat = 0
 
      #------------------------------//----------------------------//----------------------------
      #El panel en lo maximo y las demas que aporten
      #Si el panel tiene mas que la carga, entonces Pload/eficiencia
-   #   if (Ppanel >= Pcarga):
-   #      Ppanel = Pcarga/np
+     if (Ppanel >= Pcarga/np):
+      Ppanel = Pcarga/np
    #   if (Ppanel < Pcarga):
    #      Pfalta = Pcarga - Ppanel
    #      if (Pem != 0 and Pem >= Pfalta):
@@ -74,12 +75,16 @@ def SendData(mycursor,mydb):
      #Los estados
      if (Pred < Pcarga):
         Estado = 1
+        if(Pred < 0):
+           Pred = 0
+
      if (Pred <= 0):
         Estado = 2
+        Pred = 0
+
      if (Pred > 0 and Pred < Pcarga):
         Estado = 1
      if (Pred > Pcarga):
-        Pbat = 0
         Estado = 4
         #Si da negativa, el panel tiene potencia suficiente para alimentar a las esenciales
         Pred1 = (Pesenciales - Ppanel*np - Pem*ng)/nred
@@ -101,6 +106,7 @@ inicio = time.time()
 while True: 
      tiempo = (time.time() - inicio)
      tiempo = round(tiempo,2)
+     print(tiempo)
      if (tiempo >= 300): # cada 300 segundos que actualice la lectura del json
         print("Sending")   
         SendData(mycursor,mydb)
