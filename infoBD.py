@@ -62,14 +62,14 @@ def SendData(mycursor,mydb):
      #------------------------------//----------------------------//----------------------------
      #El panel en lo maximo y las demas que aporten
      #Si el panel tiene mas que la carga, entonces Pload/eficiencia
-     if (Ppanel >= Pcarga):
-        Ppanel = Pcarga/np
-     if (Ppanel < Pcarga):
-        Pfalta = Pcarga - Ppanel
-        if (Pem != 0 and Pem >= Pfalta):
-           Pem = Pfalta
-        if (Pem == 0):
-            Pbat = Pfalta
+   #   if (Ppanel >= Pcarga):
+   #      Ppanel = Pcarga/np
+   #   if (Ppanel < Pcarga):
+   #      Pfalta = Pcarga - Ppanel
+   #      if (Pem != 0 and Pem >= Pfalta):
+   #         Pem = Pfalta
+   #      if (Pem == 0):
+   #          Pbat = Pfalta
 
      #Los estados
      if (Pred < Pcarga):
@@ -80,9 +80,13 @@ def SendData(mycursor,mydb):
         Estado = 1
      if (Pred > Pcarga):
         Estado = 4
+        #Si da negativa, el panel tiene potencia suficiente para alimentar a las esenciales
         Pred1 = (Pesenciales - Ppanel*np - Pem*ng)/nred
         Pred1 = round(Pred1, 2)
+        if(Pred1 < 0):
+           Pred1 = 0
         Pred = Pred1 + Pnoesenciales
+      
 
      sql = "INSERT INTO datos (P1, P2, P3, P4, P5, fecha, hora, estado) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
      val = (Pred, Ppanel, Pbat, Pcarga, Pem, fecha, hora, Estado)
