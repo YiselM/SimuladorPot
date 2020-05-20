@@ -79,6 +79,7 @@ def SendData(mycursor,mydb):
      if (Pred > 0 and Pred < Pcarga):
         Estado = 1
      if (Pred > Pcarga):
+        Pbat = 0
         Estado = 4
         #Si da negativa, el panel tiene potencia suficiente para alimentar a las esenciales
         Pred1 = (Pesenciales - Ppanel*np - Pem*ng)/nred
