@@ -77,6 +77,7 @@ def SendData(mycursor,mydb):
         Estado = 1
         if(Pred < 0):
            Pred = 0
+           Ppanel = Pnoesenciales/np
 
      if (Pred <= 0):
         Estado = 2
@@ -91,7 +92,9 @@ def SendData(mycursor,mydb):
         Pred1 = round(Pred1, 2)
         if(Pred1 < 0):
            Pred1 = 0
+           Ppanel = Pesenciales/np
         Pred = Pred1 + Pnoesenciales
+
       
 
      sql = "INSERT INTO datos (P1, P2, P3, P4, P5, fecha, hora, estado) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
