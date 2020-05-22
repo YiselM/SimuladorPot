@@ -109,7 +109,7 @@ inicio = time.time()
 while True: 
      tiempo = (time.time() - inicio)
      tiempo = round(tiempo,2)
-     print(tiempo)
+     #print(tiempo)
      if (tiempo >= 300): # cada 300 segundos que actualice la lectura del json
         print("Sending")   
         SendData(mycursor,mydb)
