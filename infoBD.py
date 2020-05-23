@@ -77,10 +77,7 @@ def SendData(mycursor,mydb):
         Estado = 2
         Pred = 0
 
-     if(Pred == 0 and Pesenciales <= Ppanel*np + Pem*nwt):
-
-
-
+     #if(Pred == 0 and Pesenciales <= Ppanel*np + Pem*nwt):
 
      if (Pred > 0 and Pred < Pcarga):
         Estado = 1
