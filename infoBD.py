@@ -5,7 +5,6 @@ import mysql.connector
 import requests
 
 mydb = mysql.connector.connect(
-   
    host="database-1.cbelsi1ervaq.us-east-1.rds.amazonaws.com",
    user="adminpardo",
    passwd="Pfestacion123!",
@@ -21,11 +20,9 @@ def SendData(mycursor,mydb):
      rv = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IATLNTIC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultadov = rv.json()
      viento = (resultadov['observations'][0]['metric']['windSpeed'])*(10/36) #obtengo el viento   
-     #viento = 0
      rr = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IPUERTOC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultador = rr.json()
      radiacion = resultador['observations'][0]['solarRadiation'] #obtengo la radiacion 
-     #radiacion = 0
      
      #Para la carga
      Pesenciales = 15
@@ -63,27 +60,32 @@ def SendData(mycursor,mydb):
      Pbat = 0
 
      #------------------------------//----------------------------//----------------------------
-     if (Ppanel >= Pcarga/np):
-      Ppanel = Pcarga/np
 
      #Los estados
      if (Pred < Pcarga):
         Estado = 1
         if(Pred < 0):
            Pred = 0
-           Ppanel = Pnoesenciales/np
 
      if (Pred <= 0):
         Estado = 2
         Pred = 0
-
-     #if(Pred == 0 and Pesenciales <= Ppanel*np + Pem*nwt):
-
-
-
+        if (Ppanel >= Pcarga/np):
+           Ppanel = Pcarga/np
+        #en S1 y S2 tanto esenciales como no esenciales las alimenta el sistema
+        
+     if(Estado == 1 and Pred == 0):
+        if (Pcarga > Ppanel*np + Pem*nwt):
+           #Pesenciales <= Ppanel*np + Pem*nwt
+           Pcarga = Pesenciales
+           Estado = 3
+        if(Pesenciales > Ppanel*np + Pem*nwt):
+           Estado = 3
+           Pbat = (Pesenciales - Ppanel*np - Pem*nwt)/nbat
 
      if (Pred > 0 and Pred < Pcarga):
         Estado = 1
+
      if (Pred > Pcarga):
         Estado = 4
         #Si da negativa, el panel tiene potencia suficiente para alimentar a las esenciales
