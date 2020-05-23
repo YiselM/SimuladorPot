@@ -5,10 +5,11 @@ import mysql.connector
 import requests
 
 mydb = mysql.connector.connect(
-   host="db4free.net",
-   user="baenav",
-   passwd="qwertyuiop",
-   database="proyecto_diseno"
+
+   host="database-1.cbelsi1ervaq.us-east-1.rds.amazonaws.com/",
+   user="adminpardo",
+   passwd="Pfestacion123!",
+   database="nodo"
 )
 
 mycursor = mydb.cursor()
@@ -56,21 +57,14 @@ def SendData(mycursor,mydb):
      nred = 0.448
      nbat = 0.8
      np = 0.652
+     nwt = 0.56
      Pred = (Pcarga - Ppanel*np - Pem*ng)/nred
      Pred = round(Pred, 2)
      Pbat = 0
 
      #------------------------------//----------------------------//----------------------------
-     #El panel en lo maximo y las demas que aporten
-     #Si el panel tiene mas que la carga, entonces Pload/eficiencia
      if (Ppanel >= Pcarga/np):
       Ppanel = Pcarga/np
-   #   if (Ppanel < Pcarga):
-   #      Pfalta = Pcarga - Ppanel
-   #      if (Pem != 0 and Pem >= Pfalta):
-   #         Pem = Pfalta
-   #      if (Pem == 0):
-   #          Pbat = Pfalta
 
      #Los estados
      if (Pred < Pcarga):
@@ -82,6 +76,11 @@ def SendData(mycursor,mydb):
      if (Pred <= 0):
         Estado = 2
         Pred = 0
+
+     if(Pred == 0 and Pesenciales <= Ppanel*np + Pem*nwt):
+
+
+
 
      if (Pred > 0 and Pred < Pcarga):
         Estado = 1
