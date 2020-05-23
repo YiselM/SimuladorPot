@@ -5,8 +5,8 @@ import mysql.connector
 import requests
 
 mydb = mysql.connector.connect(
-
-   host="database-1.cbelsi1ervaq.us-east-1.rds.amazonaws.com/",
+   
+   host="database-1.cbelsi1ervaq.us-east-1.rds.amazonaws.com",
    user="adminpardo",
    passwd="Pfestacion123!",
    database="nodo"
@@ -78,6 +78,9 @@ def SendData(mycursor,mydb):
         Pred = 0
 
      #if(Pred == 0 and Pesenciales <= Ppanel*np + Pem*nwt):
+
+
+
 
      if (Pred > 0 and Pred < Pcarga):
         Estado = 1
