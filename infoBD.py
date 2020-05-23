@@ -13,21 +13,30 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 
-def SendData(mycursor,mydb):     
+Pred = 0
+Ppanel = 0
+Pbat = 0
+Pcarga = 0 
+Pem = 0
+
+def SendData(mycursor, mydb):
+     global Pred, Ppanel, Pbat, Pcarga, Pem
      now = datetime.now()
      fecha = now.strftime('%Y-%m-%d')
      hora = time.strftime("%H:%M")
+     #Se obtiene los datos de radiación y viento de las estaciones meteorologicas
      rv = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IATLNTIC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultadov = rv.json()
-     viento = (resultadov['observations'][0]['metric']['windSpeed'])*(10/36) #obtengo el viento   
+     viento = (resultadov['observations'][0]['metric']['windSpeed'])*(10/36) #Se obtiene el viento   
      rr = requests.get('https://api.weather.com/v2/pws/observations/current?stationId=IPUERTOC4&format=json&units=m&apiKey=2538e347f5254da8b8e347f5258da83d')
      resultador = rr.json()
-     radiacion = resultador['observations'][0]['solarRadiation'] #obtengo la radiacion 
+     radiacion = resultador['observations'][0]['solarRadiation'] #Se obtiene la radiacion 
      
-     #Para la carga
+     #Definicion de la carga
      Pesenciales = 15
      Pnoesenciales = 68
 
+     #Perfil de carga
      if ((hora >= "00:00") and (hora <= "05:00")):
         Pcarga = 15
      if ((hora >= "05:00") and (hora <= "23:20")):
@@ -35,13 +44,13 @@ def SendData(mycursor,mydb):
      if ((hora >= "23:20") and (hora <= "00:00")):
         Pcarga = 15
 
-     #Para el panel
+     #Calculo de la potencia maxima del panel
      eficienciap = 0.13
      area = 1.31
      Ppanel = radiacion*eficienciap*area
      Ppanel = round(Ppanel, 2)
      
-     #Para el generador
+     #Calculo de la potencia del emulador eolico
      if (viento < 4 or viento > 14):
         Pem = 0 
      else:
@@ -49,69 +58,80 @@ def SendData(mycursor,mydb):
      Pem = Pem/10
      Pem = round(Pem, 2)
 
-     #Para la red
+     #Eficiencias
      ng = 0.554
      nred = 0.448
      nbat = 0.8
      np = 0.652
      nwt = 0.56
+
+     #Calculo de la red
      Pred = (Pcarga - Ppanel*np - Pem*ng)/nred
      Pred = round(Pred, 2)
      Pbat = 0
 
-     #------------------------------//----------------------------//----------------------------
-
-     #Los estados
-     if (Pred < Pcarga):
-        Estado = 1
+     def Estado1():
+        global Pred
         if(Pred < 0):
            Pred = 0
 
-     if (Pred <= 0):
-        Estado = 2
+     def Estado2():
+        global Pred, Ppanel, Pcarga
         Pred = 0
-        if (Ppanel >= Pcarga/np):
+        if(Ppanel >= Pcarga/np):
            Ppanel = Pcarga/np
-        #en S1 y S2 tanto esenciales como no esenciales las alimenta el sistema
-        
-     if(Estado == 1 and Pred == 0):
+
+     def Estado3():
+        global Pcarga, Ppanel, Pem, Pbat
         if (Pcarga > Ppanel*np + Pem*nwt):
-           #Pesenciales <= Ppanel*np + Pem*nwt
-           Pcarga = Pesenciales
-           Estado = 3
-        if(Pesenciales > Ppanel*np + Pem*nwt):
-           Estado = 3
-           Pbat = (Pesenciales - Ppanel*np - Pem*nwt)/nbat
-
-     if (Pred > 0 and Pred < Pcarga):
-        Estado = 1
-
-     if (Pred > Pcarga):
-        Estado = 4
-        #Si da negativa, el panel tiene potencia suficiente para alimentar a las esenciales
+            Pcarga = Pesenciales
+            if(Pesenciales > Ppanel*np + Pem*nwt):
+               Pbat = (Pesenciales - Ppanel*np - Pem*nwt)/nbat
+            
+     def Estado4():
+        global Pred, Ppanel, Pem
         Pred1 = (Pesenciales - Ppanel*np - Pem*ng)/nred
         Pred1 = round(Pred1, 2)
         if(Pred1 < 0):
            Pred1 = 0
            Ppanel = Pesenciales/np
         Pred = Pred1 + Pnoesenciales
+        
 
-      
+     #Logica para los estados
+     Estado = 1
+     if (Pred < Pcarga):
+        Estado = 1
+        Estado1()
+     if (Pred <= 0):
+        Estado = 2
+        Estado2()
+     if (Pred > 0 and Pred < Pcarga):
+        Estado = 1
+        Estado1()
+     if(Pred == 0 and Estado == 1):
+        Estado = 3
+        Estado3()
+     if (Pred > Pcarga):
+        Estado = 4
+        Estado4()
 
+     #Envío de datos a la base de datos
      sql = "INSERT INTO datos (P1, P2, P3, P4, P5, fecha, hora, estado) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
      val = (Pred, Ppanel, Pbat, Pcarga, Pem, fecha, hora, Estado)
-    #print(val)
-     mycursor.execute(sql, val)
-     mydb.commit()
+     print(val)
+     #mycursor.execute(sql, val)
+     #mydb.commit()
      print("Subido")
-#    time.sleep(1) 
 
+
+
+#Main
 inicio = time.time()
 while True: 
      tiempo = (time.time() - inicio)
      tiempo = round(tiempo,2)
-     #print(tiempo)
-     if (tiempo >= 300): # cada 300 segundos que actualice la lectura del json
+     if (tiempo >= 20): #Cada 5 minutos se envía un dato a la BD
         print("Sending")   
         SendData(mycursor,mydb)
         inicio = time.time()
