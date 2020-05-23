@@ -119,9 +119,9 @@ def SendData(mycursor, mydb):
      #Envío de datos a la base de datos
      sql = "INSERT INTO datos (P1, P2, P3, P4, P5, fecha, hora, estado) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
      val = (Pred, Ppanel, Pbat, Pcarga, Pem, fecha, hora, Estado)
-     print(val)
-     #mycursor.execute(sql, val)
-     #mydb.commit()
+     #print(val)
+     mycursor.execute(sql, val)
+     mydb.commit()
      print("Subido")
 
 
@@ -131,7 +131,7 @@ inicio = time.time()
 while True: 
      tiempo = (time.time() - inicio)
      tiempo = round(tiempo,2)
-     if (tiempo >= 20): #Cada 5 minutos se envía un dato a la BD
+     if (tiempo >= 300): #Cada 5 minutos se envía un dato a la BD
         print("Sending")   
         SendData(mycursor,mydb)
         inicio = time.time()
