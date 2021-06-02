@@ -24,7 +24,7 @@ requests==2.23.0
 six==1.14.0
 sqlparse==0.3.1
 toml==0.10.0
-urllib3==1.25.9
+urllib3==1.26.5
 virtualenv==20.0.20
 whitenoise==5.0.1
 wrapt==1.12.1
